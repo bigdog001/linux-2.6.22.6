@@ -3975,7 +3975,7 @@ void __init console_init(void)
 	 * set up the console device so that later boot sequences can 
 	 * inform about problems etc..
 	 */
-	call = __con_initcall_start;
+	call = __con_initcall_start;							// __con_initcall_start 从链接脚本为: .con_initcall.init, 它来自 console_initcall,其中实现其为 console_initcall(s3c24xx_serial_initconsole);
 	while (call < __con_initcall_end) {
 		(*call)();
 		call++;

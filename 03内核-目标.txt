@@ -1,0 +1,101 @@
+内核的目的：启动应用程序
+
+1,处理uboot传入的参数
+	arch/arm/kernel/head.S
+	一，__lookup_processor_type		判断是否支持这个CPU
+	二，__lookup_machine_type		判断是否支持这个单板
+		连接脚本:
+		 __arch_info_begin = .;
+		*(.arch.info.init)
+		__arch_info_end = .;
+		在文件 include/asm-arm/mach/arch.h 
+			#define MACHINE_START(_type,_name)			\
+			static const struct machine_desc __mach_desc_##_type	\
+			 __used							\
+			 __attribute__((__section__(".arch.info.init"))) = {	\
+				.nr		= MACH_TYPE_##_type,		\
+				.name		= _name,
+
+			#define MACHINE_END				\
+			};
+		调用 MACHINE_START 的文件 arch/arm/mach-s3c2440.c
+		
+			MACHINE_START(S3C2440, "SMDK2440")
+				/* Maintainer: Ben Dooks <ben@fluff.org> */
+				.phys_io	= S3C2410_PA_UART,
+				.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
+				.boot_params	= S3C2410_SDRAM_PA + 0x100,
+
+				.init_irq	= s3c24xx_init_irq,
+				.map_io		= smdk2440_map_io,
+				.init_machine	= smdk2440_machine_init,
+				.timer		= &s3c24xx_timer,
+			MACHINE_END
+			
+		展开
+		static const struct machine_desc __mach_desc_S3C2440	\
+			__used							\
+			__attribute__((__section__(".arch.info.init"))) = {	\
+				.nr		= MACH_TYPE_S3C2440,		\
+				.name	= "SMDK2440",
+				/* Maintainer: Ben Dooks <ben@fluff.org> */
+				.phys_io	= S3C2410_PA_UART,
+				.io_pg_offst	= (((u32)S3C24XX_VA_UART) >> 18) & 0xfffc,
+				.boot_params	= S3C2410_SDRAM_PA + 0x100,
+
+				.init_irq	= s3c24xx_init_irq,
+				.map_io		= smdk2440_map_io,
+				.init_machine	= smdk2440_machine_init,
+				.timer		= &s3c24xx_timer,
+			}
+			
+		三，创建页表
+		四，使能MMU
+		五，跳转到 start_kernel(init/main.c)			
+			处理启动参数
+			
+			start_kernel()
+				setup_arch(&command_line);	//处理uboot传递进来的参数				setup_command_line(command_line);
+				parse_early_param()									//这个函数并不是我们需要的
+					do_early_param()
+						从__setup_start 到 __setup_end，调用early函数
+				parse_args(xx, unknown_bootoption)
+				unknown_bootoption()
+					obsolete_checksetup()
+						从__setup_start 到 __setup_end，调用非early函数
+				rest_init()
+					kernel_init()
+						prepare_namespace()
+							mount_root()				//挂载根文件系统（从参数获取目录 root = /dev/tmdblock3）
+						init_post()
+							//执行应用程序 
+							
+			分析 prepare_namespace()
+				saved_root_name[0]
+				static int __init root_dev_setup(char *line)
+				{
+					strlcpy(saved_root_name, line, sizeof(saved_root_name));
+					return 1;
+				}
+
+				__setup("root=", root_dev_setup);	//定时在 include/linux/init.h
+				
+				#define __setup(str, fn)					\
+					__setup_param(str, fn, fn, 0)
+					
+				#define __setup_param(str, unique_id, fn, early)			\
+					static char __setup_str_##unique_id[] __initdata = str;	\
+					static struct obs_kernel_param __setup_##unique_id	\
+						__attribute_used__				\
+						__attribute__((__section__(".init.setup")))	\
+						__attribute__((aligned((sizeof(long)))))	\
+						= { __setup_str_##unique_id, fn, early }
+
+				
+2，挂载：根文件系统
+	内核怎样启动第一个应用程序
+		一，open(/dev/console) , sys_dump(0), sys_dump(0)
+			printf(), scanf(), err() 标准输出，输入，错误，所有的打印信息都是从/dev/console打错出来
+		二，通过 run_init_process 启动程序
+			程序可以是：命令行参数，/sbin/init， /etc/init, 等。
+3，启动应用程序

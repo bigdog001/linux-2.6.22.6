@@ -1881,12 +1881,12 @@ s3c24xx_serial_console_setup(struct console *co, char *options)
 
 static struct console s3c24xx_serial_console =
 {
-	.name		= S3C24XX_SERIAL_NAME,
+	.name		= S3C24XX_SERIAL_NAME,				// ttySAC
 	.device		= uart_console_device,
-	.flags		= CON_PRINTBUFFER,
-	.index		= -1,
-	.write		= s3c24xx_serial_console_write,
-	.setup		= s3c24xx_serial_console_setup
+	.flags		= CON_PRINTBUFFER,					//控制台可用之前，printk已经在缓冲区打印了很多信息，CON_PRINTBUFFER表示打印这些信息
+	.index		= -1,								// -1 可以匹配任意序号， 比如ttySAC0/1/2
+	.write		= s3c24xx_serial_console_write,		// 打印函数
+	.setup		= s3c24xx_serial_console_setup		// 设置函数
 };
 
 static int s3c24xx_serial_initconsole(void)
@@ -1902,6 +1902,8 @@ static int s3c24xx_serial_initconsole(void)
 		printk(KERN_ERR "s3c24xx: no devices for console init\n");
 		return 0;
 	}
+
+	printk(KERN_ERR "s3c24xx_serial_initconsole dev-name = %s \n", dev->name);
 
 	if (strcmp(dev->name, "s3c2400-uart") == 0) {
 		info = s3c2400_uart_inf_at;

@@ -628,8 +628,8 @@ static void s3c2410_nand_init_chip(struct s3c2410_nand_info *info,
 
 	if (hardware_ecc) {
 		chip->ecc.calculate = s3c2410_nand_calculate_ecc;
-		chip->ecc.correct   = s3c2410_nand_correct_data;
-		chip->ecc.mode	    = NAND_ECC_HW;
+		chip->ecc.correct   = s3c2410_nand_correct_data;		// 对nandflash进行ecc校验
+		chip->ecc.mode	    = NAND_ECC_HW;						// 硬件ecc校验生成校验码
 		chip->ecc.size	    = 512;
 		chip->ecc.bytes	    = 3;
 		chip->ecc.layout    = &nand_hw_eccoob;
@@ -646,13 +646,13 @@ static void s3c2410_nand_init_chip(struct s3c2410_nand_info *info,
 			break;
 
 		case TYPE_S3C2440:
-  			chip->ecc.hwctl     = s3c2440_nand_enable_hwecc;
-  			chip->ecc.calculate = s3c2440_nand_calculate_ecc;
+  			chip->ecc.hwctl     = s3c2440_nand_enable_hwecc;	//使能 nandflash的编码/解码ecc
+  			chip->ecc.calculate = s3c2440_nand_calculate_ecc;	// 计算 nandflash 的ecc
 			break;
 
 		}
 	} else {
-		chip->ecc.mode	    = NAND_ECC_SOFT;
+		chip->ecc.mode	    = NAND_ECC_SOFT;					// 软件ecc 校验生成校验码
 	}
 }
 
@@ -878,7 +878,7 @@ static int __init s3c2410_nand_init(void)
 	printk("S3C24XX NAND Driver, (c) 2004 Simtec Electronics\n");
 
 	platform_driver_register(&s3c2412_nand_driver);
-	platform_driver_register(&s3c2440_nand_driver);
+	platform_driver_register(&s3c2440_nand_driver);						// 注册 s3c2440关于nandflash的区别，与 nand_device匹配
 	return platform_driver_register(&s3c2410_nand_driver);
 }
 

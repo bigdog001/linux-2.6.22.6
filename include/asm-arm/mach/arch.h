@@ -20,12 +20,12 @@ struct machine_desc {
 	 * by assembler code in head-armv.S
 	 */
 	unsigned int		nr;		/* architecture number	*/
-	unsigned int		phys_io;	/* start of physical io	*/
+	unsigned int		phys_io;	/* start of physical io	*/			// 存放 串口的寄存器地址 : 0x50000000
 	unsigned int		io_pg_offst;	/* byte offset for io 
 						 * page tabe entry	*/
 
-	const char		*name;		/* architecture name	*/
-	unsigned long		boot_params;	/* tagged list		*/
+	const char		*name;		/* architecture name	*/				// SMDK2440
+	unsigned long		boot_params;	/* tagged list		*/			//存放 param的地址:0x30000100
 
 	unsigned int		video_start;	/* start of video RAM	*/
 	unsigned int		video_end;	/* end of video RAM	*/
@@ -37,10 +37,10 @@ struct machine_desc {
 	void			(*fixup)(struct machine_desc *,
 					 struct tag *, char **,
 					 struct meminfo *);
-	void			(*map_io)(void);/* IO mapping function	*/
-	void			(*init_irq)(void);
-	struct sys_timer	*timer;		/* system tick timer	*/
-	void			(*init_machine)(void);
+	void			(*map_io)(void);/* IO mapping function	*/			// smdk2440_map_io
+	void			(*init_irq)(void);									// s3c24xx_init_irq
+	struct sys_timer	*timer;		/* system tick timer	*/			// s3c24xx_timer
+	void			(*init_machine)(void);								// smdk2440_machine_init
 };
 
 /*

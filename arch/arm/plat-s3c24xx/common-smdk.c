@@ -108,44 +108,24 @@ static struct platform_device smdk_led7 = {
 
 static struct mtd_partition smdk_default_nand_part[] = {
 	[0] = {
-		.name	= "Boot Agent",
-		.size	= SZ_16K,
+        .name   = "bootloader",
+        .size   = 0x00040000,							// bootloader的大小为 512k
 		.offset	= 0,
 	},
 	[1] = {
-		.name	= "S3C2410 flash partition 1",
-		.offset = 0,
-		.size	= SZ_2M,
+        .name   = "params",
+        .offset = MTDPART_OFS_APPEND,					// 表示 紧接着上一个分区
+        .size   = 0x00020000,							// param的大小为 256k
 	},
 	[2] = {
-		.name	= "S3C2410 flash partition 2",
-		.offset = SZ_4M,
-		.size	= SZ_4M,
+        .name   = "kernel",
+        .offset = MTDPART_OFS_APPEND,					// 表示 紧接着上一个分区
+        .size   = 0x00200000,							// kernel的大小为 2M
 	},
 	[3] = {
-		.name	= "S3C2410 flash partition 3",
-		.offset	= SZ_8M,
-		.size	= SZ_2M,
-	},
-	[4] = {
-		.name	= "S3C2410 flash partition 4",
-		.offset = SZ_1M * 10,
-		.size	= SZ_4M,
-	},
-	[5] = {
-		.name	= "S3C2410 flash partition 5",
-		.offset	= SZ_1M * 14,
-		.size	= SZ_1M * 10,
-	},
-	[6] = {
-		.name	= "S3C2410 flash partition 6",
-		.offset	= SZ_1M * 24,
-		.size	= SZ_1M * 24,
-	},
-	[7] = {
-		.name	= "S3C2410 flash partition 7",
-		.offset = SZ_1M * 48,
-		.size	= SZ_16M,
+        .name   = "root",
+        .offset = MTDPART_OFS_APPEND,					// 表示 紧接着上一个分区
+        .size   = MTDPART_SIZ_FULL,						// root为剩余的大小
 	}
 };
 
@@ -163,9 +143,9 @@ static struct s3c2410_nand_set smdk_nand_sets[] = {
 */
 
 static struct s3c2410_platform_nand smdk_nand_info = {
-	.tacls		= 20,
-	.twrph0		= 60,
-	.twrph1		= 20,
+	.tacls		= 20,									// TACLS 即 CS有效 到 nWE/nRO有效 的时间(Tcls - Twp = 0ns)
+	.twrph0		= 60,									// nWE/nRo 持续有效时间，此时 数据有效(Twp = 12ns)
+	.twrph1		= 20,									// twrph1 为 nWE/nRo 无效 到 CS 的无效时间(Tclh = 5ns)
 	.nr_sets	= ARRAY_SIZE(smdk_nand_sets),
 	.sets		= smdk_nand_sets,
 };
@@ -197,9 +177,9 @@ void __init smdk_machine_init(void)
 	if (machine_is_smdk2443())
 		smdk_nand_info.twrph0 = 50;
 
-	s3c_device_nand.dev.platform_data = &smdk_nand_info;
+	s3c_device_nand.dev.platform_data = &smdk_nand_info;					//添加 nand_device
 
-	platform_add_devices(smdk_devs, ARRAY_SIZE(smdk_devs));
+	platform_add_devices(smdk_devs, ARRAY_SIZE(smdk_devs));					// 通过platform总线，注册 nandflash设备
 
 	s3c2410_pm_init();
 }

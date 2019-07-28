@@ -1388,14 +1388,14 @@ find_exported_dentry(struct super_block *sb, void *obj, void *parent,
 		     void *context);
 
 struct file_system_type {
-	const char *name;
-	int fs_flags;
+	const char *name;										// 文件系统的名称 "yffs2, yaffs等 "
+	int fs_flags;											// 文件系统的类型标记
 	int (*get_sb) (struct file_system_type *, int,
 		       const char *, void *, struct vfsmount *);
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
-	struct file_system_type * next;
-	struct list_head fs_supers;
+	struct file_system_type * next;							// file_system结构链表
+	struct list_head fs_supers;								// file_system链表头
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;
 };

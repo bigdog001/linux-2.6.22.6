@@ -78,14 +78,14 @@
 ENTRY(stext)
 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
 						@ and irqs disabled
-	mrc	p15, 0, r9, c0, c0		@ get processor id
-	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
+	mrc	p15, 0, r9, c0, c0		@ get processor id					/* 读取CPU ID，存入r9寄存器 */
+	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid			/* 确定内核是否属于该框架  */
 	movs	r10, r5				@ invalid processor (r5=0)?
 	beq	__error_p			@ yes, error 'p'
-	bl	__lookup_machine_type		@ r5=machinfo
+	bl	__lookup_machine_type		@ r5=machinfo					/* 确定内核是否支持该单板 */
 	movs	r8, r5				@ invalid machine (r5=0)?
 	beq	__error_a			@ yes, error 'a'
-	bl	__create_page_tables
+	bl	__create_page_tables										/* 创建一级页表 */
 
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -94,9 +94,9 @@ ENTRY(stext)
 	 * above.  On return, the CPU will be ready for the MMU to be
 	 * turned on, and r0 will hold the CPU control register value.
 	 */
-	ldr	r13, __switch_data		@ address to jump to after
+	ldr	r13, __switch_data		@ address to jump to after			
 						@ mmu has been enabled
-	adr	lr, __enable_mmu		@ return (PIC) address
+	adr	lr, __enable_mmu		@ return (PIC) address				/* 使能MMU */
 	add	pc, r10, #PROCINFO_INITFUNC
 
 #if defined(CONFIG_SMP)

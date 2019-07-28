@@ -325,7 +325,7 @@ static void __init setup_processor(void)
 	 * types.  The linker builds this table for us from the
 	 * entries in arch/arm/mm/proc-*.S
 	 */
-	list = lookup_processor_type(processor_id);
+	list = lookup_processor_type(processor_id);						// 通过 head-common.S 获取
 	if (!list) {
 		printk("CPU configuration botched (ID %08x), unable "
 		       "to continue.\n", processor_id);
@@ -773,14 +773,14 @@ void __init setup_arch(char **cmdline_p)
 	struct machine_desc *mdesc;
 	char *from = default_command_line;
 
-	setup_processor();
-	mdesc = setup_machine(machine_arch_type);
+	setup_processor();									// 处理器相关的设置
+	mdesc = setup_machine(machine_arch_type);			// 获取开发板
 	machine_name = mdesc->name;
 
 	if (mdesc->soft_reboot)
 		reboot_setup("s");
 
-	if (mdesc->boot_params)
+	if (mdesc->boot_params)								// 定义了bootloader传入的参数地址
 		tags = phys_to_virt(mdesc->boot_params);
 
 	/*
@@ -806,10 +806,10 @@ void __init setup_arch(char **cmdline_p)
 	init_mm.end_data   = (unsigned long) &_edata;
 	init_mm.brk	   = (unsigned long) &_end;
 
-	memcpy(boot_command_line, from, COMMAND_LINE_SIZE);
+	memcpy(boot_command_line, from, COMMAND_LINE_SIZE);	//得到 启动参数
 	boot_command_line[COMMAND_LINE_SIZE-1] = '\0';
-	parse_cmdline(cmdline_p, from);
-	paging_init(&meminfo, mdesc);
+	parse_cmdline(cmdline_p, from);						// 对命令进行一些选项解析
+	paging_init(&meminfo, mdesc);						// meminfo 存放内存信息, mdesc 是setup_machine查找到的 MACHINE_START(S3C2440, "SMDK2440")
 	request_standard_resources(&meminfo, mdesc);
 
 #ifdef CONFIG_SMP

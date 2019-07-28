@@ -521,7 +521,7 @@ asmlinkage void __init start_kernel(void)
 	boot_cpu_init();
 	page_address_init();
 	printk(KERN_NOTICE);
-	printk(linux_banner);
+	printk(linux_banner);								/* 打印 linux内核编译信息: 编译者，编译时间,编译版本,gcc版本等 */
 	setup_arch(&command_line);
 	setup_command_line(command_line);
 	unwind_setup();
@@ -541,7 +541,7 @@ asmlinkage void __init start_kernel(void)
 	preempt_disable();
 	build_all_zonelists();
 	page_alloc_init();
-	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
+	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);//打印 kernel的启动参数
 	parse_early_param();
 	parse_args("Booting kernel", static_command_line, __start___param,
 		   __stop___param - __start___param,
@@ -572,7 +572,7 @@ asmlinkage void __init start_kernel(void)
 	 * we've done PCI setups etc, and console_init() must be aware of
 	 * this. But we do want output early, in case something goes wrong.
 	 */
-	console_init();
+	console_init();						//初始化串口
 	if (panic_later)
 		panic(panic_later, panic_param);
 

@@ -720,7 +720,7 @@ static void __init devicemaps_init(struct machine_desc *mdesc)
 	 * Ask the machine support to map in the statically mapped devices.
 	 */
 	if (mdesc->map_io)
-		mdesc->map_io();
+		mdesc->map_io();				// µ÷ÓÃ  arch/arm/mach-s3c2440/mach-s3c2440.c µÄ smdk2440_map_io
 
 	/*
 	 * Finally flush the caches and tlb to ensure that we're in a

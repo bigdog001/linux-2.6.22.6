@@ -32,6 +32,7 @@ __switch_data:
  *  r9  = processor ID
  */
 	.type	__mmap_switched, %function
+/* 复制数据段，清除BSS段，启动内核等操作 */
 __mmap_switched:
 	adr	r3, __switch_data + 4
 
@@ -52,7 +53,7 @@ __mmap_switched:
 	str	r1, [r5]			@ Save machine type
 	bic	r4, r0, #CR_A			@ Clear 'A' bit
 	stmia	r6, {r0, r4}			@ Save control register values
-	b	start_kernel
+	b	start_kernel					/* 启动内核 */
 
 /*
  * Exception handling.  Something went wrong and we can't proceed.  We
