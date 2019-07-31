@@ -43,6 +43,9 @@
 #include <asm/plat-s3c24xx/common-smdk.h>
 #include <asm/plat-s3c24xx/devs.h>
 #include <asm/plat-s3c24xx/pm.h>
+#if defined(CONFIG_DM9000) || defined(CONFIG_DM9000_MODULE)
+#include <linux/dm9000.h>
+#endif
 
 /* LED devices */
 
@@ -150,6 +153,47 @@ static struct s3c2410_platform_nand smdk_nand_info = {
 	.sets		= smdk_nand_sets,
 };
 
+
+#if defined(CONFIG_DM9000) || defined(CONFIG_DM9000_MODULE)
+/* DM9000 */
+static struct resource s3c_dm9000_resource[] = {
+	[0] = {
+        .start = S3C2410_CS4,       	/* ADDR2=0，发送地址时使用这个地址 */
+        .end   = S3C2410_CS4 + 3,		// 接入的是add2，所以 0x00000004之前的都认为是发送地址
+        .flags = IORESOURCE_MEM,
+    },
+    [1] = {
+        .start = S3C2410_CS4 + 4,   	/* ADDR2=1，传输数据时使用这个地址 */
+        .end   = S3C2410_CS4 + 4 + 3,	// 接入的是add2，所以 0x00000004之前的都认为是发送数据
+        .flags = IORESOURCE_MEM,
+    },
+    [2] = {
+        .start = IRQ_EINT7,         	/* 中断号 */
+        .end   = IRQ_EINT7,
+        .flags = IORESOURCE_IRQ,
+    }
+	
+};
+
+/* for the moment we limit ourselves to 16bit IO until some
+ * better IO routines can be written and tested
+*/
+
+static struct dm9000_plat_data s3c_dm9000_platdata = {
+    .flags      = DM9000_PLATF_16BITONLY,
+};
+
+struct platform_device s3c_device_dm9000 = {
+	.name		  = "dm9000",
+	.id		  = -1,
+	.num_resources	  = ARRAY_SIZE(s3c_dm9000_resource),
+	.resource	  = s3c_dm9000_resource,
+	.dev        = {
+        .platform_data = &s3c_dm9000_platdata,
+    }
+};
+#endif /* CONFIG_DM9000 */
+
 /* devices we initialise */
 
 static struct platform_device __initdata *smdk_devs[] = {
@@ -158,6 +202,9 @@ static struct platform_device __initdata *smdk_devs[] = {
 	&smdk_led5,
 	&smdk_led6,
 	&smdk_led7,
+#if defined(CONFIG_DM9000) || defined(CONFIG_DM9000_MODULE)
+    &s3c_device_dm9000,
+#endif
 };
 
 void __init smdk_machine_init(void)

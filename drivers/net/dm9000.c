@@ -114,11 +114,11 @@ MODULE_PARM_DESC(watchdog, "transmit timeout in milliseconds");
 /* Structure/enum declaration ------------------------------- */
 typedef struct board_info {
 
-	void __iomem *io_addr;	/* Register I/O base address */
-	void __iomem *io_data;	/* Data I/O address */
+	void __iomem *io_addr;	/* Register I/O base address, 命令寄存器IO基地址 */
+	void __iomem *io_data;	/* Data I/O address , 数据寄存器IO地址*/
 	u16 irq;		/* IRQ */
 
-	u16 tx_pkt_cnt;
+	u16 tx_pkt_cnt;									// 传输包计数
 	u16 queue_pkt_len;
 	u16 queue_start_addr;
 	u16 dbug_cnt;
@@ -135,12 +135,12 @@ typedef struct board_info {
 	struct resource *data_req;
 	struct resource *irq_res;
 
-	struct timer_list timer;
-	struct net_device_stats stats;
+	struct timer_list timer;						// 时间列表
+	struct net_device_stats stats;					// 设置传输统计
 	unsigned char srom[128];
 	spinlock_t lock;
 
-	struct mii_if_info mii;
+	struct mii_if_info mii;							/* MII总线信息 */
 	u32 msg_enable;
 } board_info_t;
 
@@ -398,6 +398,7 @@ dm9000_probe(struct platform_device *pdev)
 	u32 id_val;
 
 	/* Init network device */
+	//内部分配一个 net_device结构体
 	ndev = alloc_etherdev(sizeof (struct board_info));
 	if (!ndev) {
 		printk("%s: could not allocate device.\n", CARDNAME);
@@ -539,8 +540,8 @@ dm9000_probe(struct platform_device *pdev)
 	/* driver system function */
 	ether_setup(ndev);
 
-	ndev->open		 = &dm9000_open;
-	ndev->hard_start_xmit    = &dm9000_start_xmit;
+	ndev->open		 = &dm9000_open;							//ifconfig命令使用网卡调用open
+	ndev->hard_start_xmit    = &dm9000_start_xmit;				// 设置数据发送函数
 	ndev->tx_timeout         = &dm9000_timeout;
 	ndev->watchdog_timeo = msecs_to_jiffies(watchdog);
 	ndev->stop		 = &dm9000_stop;
@@ -567,6 +568,7 @@ dm9000_probe(struct platform_device *pdev)
 		((u16 *) db->srom)[i] = read_srom_word(db, i);
 
 	/* Set Node Address */
+	// 设置 mac地址 
 	for (i = 0; i < 6; i++)
 		ndev->dev_addr[i] = db->srom[i];
 
@@ -582,7 +584,7 @@ dm9000_probe(struct platform_device *pdev)
 		       "set using ifconfig\n", ndev->name);
 
 	platform_set_drvdata(pdev, ndev);
-	ret = register_netdev(ndev);
+	ret = register_netdev(ndev);					// 注册 net_device
 
 	if (ret == 0) {
 		printk("%s: dm9000 at %p,%p IRQ %d MAC: ",
@@ -614,6 +616,7 @@ dm9000_open(struct net_device *dev)
 
 	PRINTK2("entering dm9000_open\n");
 
+	//注册中断
 	if (request_irq(dev->irq, &dm9000_interrupt, IRQF_SHARED, dev->name, dev))
 		return -EAGAIN;
 
@@ -692,6 +695,7 @@ dm9000_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	if (db->tx_pkt_cnt > 1)
 		return 1;
 
+/*------------------------- 以下将skb里的数据通过网卡发送出去 -----------------------------------*/
 	netif_stop_queue(dev);
 
 	/* Disable all interrupts */
@@ -733,7 +737,7 @@ dm9000_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	/* Re-enable interrupt */
 	iow(db, DM9000_IMR, IMR_PAR | IMR_PTM | IMR_PRM);
-
+/*----------------------------------------------------------------------------------------------*/
 	return 0;
 }
 
@@ -826,12 +830,12 @@ dm9000_interrupt(int irq, void *dev_id)
 	iow(db, DM9000_IMR, IMR_PAR);
 
 	/* Got DM9000 interrupt status */
-	int_status = ior(db, DM9000_ISR);	/* Got ISR */
-	iow(db, DM9000_ISR, int_status);	/* Clear ISR status */
+	int_status = ior(db, DM9000_ISR);	/* Got ISR */	/* 读取中断寄存器，获取中断状态 */
+	iow(db, DM9000_ISR, int_status);	/* Clear ISR status */	/* 向中断寄存器获取中断位置写1， 清除该中断 */
 
 	/* Received the coming packet */
 	if (int_status & ISR_PRS)
-		dm9000_rx(dev);
+		dm9000_rx(dev);									// 中断接受数据
 
 	/* Trnasmit Interrupt check */
 	if (int_status & ISR_PTS)

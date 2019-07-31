@@ -281,7 +281,7 @@ struct net_device
 	 * (i.e. as seen by users in the "Space.c" file).  It is the name
 	 * the interface.
 	 */
-	char			name[IFNAMSIZ];
+	char			name[IFNAMSIZ];										//网卡设备名称
 	/* device name hash chain */
 	struct hlist_node	name_hlist;
 
@@ -289,18 +289,18 @@ struct net_device
 	 *	I/O specific fields
 	 *	FIXME: Merge these and struct ifmap into one
 	 */
-	unsigned long		mem_end;	/* shared mem end	*/
-	unsigned long		mem_start;	/* shared mem start	*/
-	unsigned long		base_addr;	/* device I/O address	*/
-	unsigned int		irq;		/* device IRQ number	*/
+	unsigned long		mem_end;	/* shared mem end	*/				//该设备的内存结束地址
+	unsigned long		mem_start;	/* shared mem start	*/				//该设备的内存起始地址
+	unsigned long		base_addr;	/* device I/O address	*/			//该设备的内存I/O基地址
+	unsigned int		irq;		/* device IRQ number	*/			//该设备的中断号
 
 	/*
 	 *	Some hardware also needs these fields, but they are not
 	 *	part of the usual set specified in Space.c.
 	 */
 
-	unsigned char		if_port;	/* Selectable AUI, TP,..*/
-	unsigned char		dma;		/* DMA channel		*/
+	unsigned char		if_port;	/* Selectable AUI, TP,..*/			//多端口设备使用的端口类型
+	unsigned char		dma;		/* DMA channel		*/				//该设备的DMA通道
 
 	unsigned long		state;
 
@@ -312,7 +312,7 @@ struct net_device
 	/* ------- Fields preinitialized in Space.c finish here ------- */
 
 	/* Net device features */
-	unsigned long		features;
+	unsigned long		features;										//接口特征
 #define NETIF_F_SG		1	/* Scatter/gather IO. */
 #define NETIF_F_IP_CSUM		2	/* Can checksum only TCP/UDP over IPv4. */
 #define NETIF_F_NO_CSUM		4	/* Does not require checksum. F.e. loopack. */
@@ -347,9 +347,9 @@ struct net_device
 	int			ifindex;
 	int			iflink;
 
-
-	struct net_device_stats* (*get_stats)(struct net_device *dev);
-	struct net_device_stats	stats;
+	/*运行ifconfig便会调用该成员函数,并返回一个net_device_stats结构体获取信息*/
+	struct net_device_stats* (*get_stats)(struct net_device *dev);				//获取流量的统计信息
+	struct net_device_stats	stats;												//用来保存统计信息的net_device_stats结构体
 
 #ifdef CONFIG_WIRELESS_EXT
 	/* List of functions to handle Wireless Extensions (instead of ioctl).
@@ -366,8 +366,16 @@ struct net_device
 	 * will (read: may be cleaned up at will).
 	 */
 
-
-	unsigned int		flags;	/* interface flags (a la BSD)	*/
+	//flags指网络接口标志,以IFF_(Interface Flags)开头
+	/*
+	 * 当flags =IFF_UP（ 当设备被激活并可以开始发送数据包时，内核设置该标志）、
+	 * IFF_AUTOMEDIA（设置设备可在多种媒介间切换）、
+	 * IFF_BROADCAST（ 允许广播）、
+	 * IFF_DEBUG（ 调试模式，可用于控制printk调用的详细程度） 、
+	 * IFF_LOOPBACK（ 回环）、IFF_MULTICAST（ 允许组播） 、
+	 * IFF_NOARP（ 接口不能执行ARP,点对点接口就不需要运行 ARP）和IFF_POINTOPOINT（接口连接到点到点链路）等。
+	 */
+	unsigned int		flags;	/* interface flags (a la BSD)	*/				
 	unsigned short		gflags;
         unsigned short          priv_flags; /* Like 'flags' but invisible to userspace. */
 	unsigned short		padded;	/* How much padding added by alloc_netdev() */
@@ -375,16 +383,16 @@ struct net_device
 	unsigned char		operstate; /* RFC2863 operstate */
 	unsigned char		link_mode; /* mapping policy to operstate */
 
-	unsigned		mtu;	/* interface MTU value		*/
-	unsigned short		type;	/* interface hardware type	*/
-	unsigned short		hard_header_len;	/* hardware hdr length	*/
+	unsigned		mtu;	/* interface MTU value		*/					// 最大传输单元，也叫最大数据包				
+	unsigned short		type;	/* interface hardware type	*/				// 接口的硬件类型
+	unsigned short		hard_header_len;	/* hardware hdr length	*/		//硬件帧头长度,一般被赋为ETH_HLEN,即14
 
 	struct net_device	*master; /* Pointer to master device of a group,
 					  * which this device is member of.
 					  */
 
 	/* Interface address info. */
-	unsigned char		perm_addr[MAX_ADDR_LEN]; /* permanent hw address */
+	unsigned char		perm_addr[MAX_ADDR_LEN]; /* permanent hw address */		//存放网关地址
 	unsigned char		addr_len;	/* hardware address length	*/
 	unsigned short          dev_id;		/* for shared network cards */
 
@@ -414,9 +422,9 @@ struct net_device
 	int			(*poll) (struct net_device *dev, int *quota);
 	int			quota;
 	int			weight;
-	unsigned long		last_rx;	/* Time of last Rx	*/
+	unsigned long		last_rx;	/* Time of last Rx	*/						//接收数据包的时间戳,调用netif_rx()后赋上jiffies即可
 	/* Interface address info used in eth_type_trans() */
-	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast 
+	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast 	//MAC地址
 							because most packets are unicast) */
 
 	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
@@ -448,10 +456,10 @@ struct net_device
 	 */
 	int			xmit_lock_owner;
 	void			*priv;	/* pointer to private data	*/
-	int			(*hard_start_xmit) (struct sk_buff *skb,
+	int			(*hard_start_xmit) (struct sk_buff *skb,							//数据包发送函数, sk_buff就是用来收发数据包的结构体
 						    struct net_device *dev);
 	/* These may be needed for future network-power-down code. */
-	unsigned long		trans_start;	/* Time (in jiffies) of last Tx	*/
+	unsigned long		trans_start;	/* Time (in jiffies) of last Tx	*/			//发送数据包的时间戳,当要发送的时候赋上jiffies即可
 
 	int			watchdog_timeo; /* used by dev_watchdog() */
 	struct timer_list	watchdog_timer;
@@ -514,7 +522,7 @@ struct net_device
 	int			(*change_mtu)(struct net_device *dev, int new_mtu);
 
 #define HAVE_TX_TIMEOUT
-	void			(*tx_timeout) (struct net_device *dev);
+	void			(*tx_timeout) (struct net_device *dev);							//发包超时处理函数
 
 	void			(*vlan_rx_register)(struct net_device *dev,
 						    struct vlan_group *grp);
@@ -1084,3 +1092,4 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
 #endif /* __KERNEL__ */
 
 #endif	/* _LINUX_DEV_H */
+

@@ -3738,7 +3738,7 @@ static int __init init_yaffs_fs(void)
 	int error = 0;
 	struct file_system_to_install *fsinst;
 
-	//printk(KERN_INFO "yaffs Installing.");
+	printk(KERN_INFO "yaffs Installing.");
 	
 	yaffs_trace(YAFFS_TRACE_ALWAYS,
 		"yaffs Installing.");
