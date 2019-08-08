@@ -1189,10 +1189,10 @@ int input_register_handler(struct input_handler *handler)
 		if (input_table[handler->minor >> 5])
 			return -EBUSY;
 
-		input_table[handler->minor >> 5] = handler;
+		input_table[handler->minor >> 5] = handler;		//将注册进来的handler放入 input_table中
 	}
 
-	list_add_tail(&handler->node, &input_handler_list);
+	list_add_tail(&handler->node, &input_handler_list);// 将注册进来的 input_handler放入到链表中
 
 	list_for_each_entry(dev, &input_dev_list, node)
 		input_attach_handler(dev, handler);

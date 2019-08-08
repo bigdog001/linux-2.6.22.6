@@ -1,0 +1,6 @@
+kernel熟悉内容如下:
+1,kernel 启动流程，到文件系统，启动应用程序；
+2,kernel 制作根文件系统，NFS;
+3,kernel 设备驱动
+	字符设备，块设备，usb, wifi, 4G, camera, iis, iic, spi, can, eth, emmc, sd
+4,

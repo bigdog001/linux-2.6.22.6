@@ -147,17 +147,17 @@ struct dentry;
 
 struct fb_fix_screeninfo {
 	char id[16];			/* identification string eg "TT Builtin" */
-	unsigned long smem_start;	/* Start of frame buffer mem */
+	unsigned long smem_start;	/* Start of frame buffer mem */					// framebuffer的起始物理地址
 					/* (physical address) */
-	__u32 smem_len;			/* Length of frame buffer mem */
-	__u32 type;			/* see FB_TYPE_*		*/
+	__u32 smem_len;			/* Length of frame buffer mem */					// framebuffer的大小: xres*yres*16(rgb565)等
+	__u32 type;			/* see FB_TYPE_*		*/								// 参考 FB_TYPE_
 	__u32 type_aux;			/* Interleave for interleaved Planes */
-	__u32 visual;			/* see FB_VISUAL_*		*/ 
+	__u32 visual;			/* see FB_VISUAL_*		*/ 							// 参考 FB_VISUAL_
 	__u16 xpanstep;			/* zero if no hardware panning  */
 	__u16 ypanstep;			/* zero if no hardware panning  */
 	__u16 ywrapstep;		/* zero if no hardware ywrap    */
-	__u32 line_length;		/* length of a line in bytes    */
-	unsigned long mmio_start;	/* Start of Memory Mapped I/O   */
+	__u32 line_length;		/* length of a line in bytes    */					// 行的字节数:xres * 2(rgb565:16位，2字节)
+	unsigned long mmio_start;	/* Start of Memory Mapped I/O   */				// 设置framebuffer的物理地址
 					/* (physical address) */
 	__u32 mmio_len;			/* Length of Memory Mapped I/O  */
 	__u32 accel;			/* Indicate to driver which	*/
@@ -223,20 +223,20 @@ struct fb_bitfield {
 #define KHZ2PICOS(a) (1000000000UL/(a))
 
 struct fb_var_screeninfo {
-	__u32 xres;			/* visible resolution		*/
-	__u32 yres;
-	__u32 xres_virtual;		/* virtual resolution		*/
-	__u32 yres_virtual;
+	__u32 xres;			/* visible resolution		*/						// x分辨率
+	__u32 yres;																// y分辨率
+	__u32 xres_virtual;		/* virtual resolution		*/					// 一般等于xres
+	__u32 yres_virtual;														// 一般等于yres
 	__u32 xoffset;			/* offset from virtual to visible */
 	__u32 yoffset;			/* resolution			*/
 
-	__u32 bits_per_pixel;		/* guess what			*/
+	__u32 bits_per_pixel;		/* guess what			*/					//每位的像素: rgb565 = 16
 	__u32 grayscale;		/* != 0 Graylevels instead of colors */
 
-	struct fb_bitfield red;		/* bitfield in fb mem if true color, */
-	struct fb_bitfield green;	/* else only length is significant */
-	struct fb_bitfield blue;
-	struct fb_bitfield transp;	/* transparency			*/	
+	struct fb_bitfield red;		/* bitfield in fb mem if true color, */		// r颜色位域: rgb565 就是第11位，长度为5
+	struct fb_bitfield green;	/* else only length is significant */		// g颜色位域: rgb565 就是第5位，长度为6
+	struct fb_bitfield blue;												// b颜色位域: rgb565 就是第0位，长度为5
+	struct fb_bitfield transp;	/* transparency			*/					// 透明度位域
 
 	__u32 nonstd;			/* != 0 Non standard pixel format */
 
@@ -789,8 +789,8 @@ struct fb_tile_ops {
 struct fb_info {
 	int node;
 	int flags;
-	struct fb_var_screeninfo var;	/* Current var */
-	struct fb_fix_screeninfo fix;	/* Current fix */
+	struct fb_var_screeninfo var;	/* Current var */			//可变参数，用于设置具体的lcd的参数
+	struct fb_fix_screeninfo fix;	/* Current fix */			//固定参数，
 	struct fb_monspecs monspecs;	/* Current Monitor specs */
 	struct work_struct queue;	/* Framebuffer event queue */
 	struct fb_pixmap pixmap;	/* Image hardware mapper */
@@ -814,16 +814,16 @@ struct fb_info {
 	struct fb_deferred_io *fbdefio;
 #endif
 
-	struct fb_ops *fbops;
+	struct fb_ops *fbops;													// fb的操作
 	struct device *device;		/* This is the parent */
 	struct device *dev;		/* This is this fb device */
 	int class_flag;                    /* private sysfs flags */
 #ifdef CONFIG_FB_TILEBLITTING
 	struct fb_tile_ops *tileops;    /* Tile Blitting */
 #endif
-	char __iomem *screen_base;	/* Virtual address */
-	unsigned long screen_size;	/* Amount of ioremapped VRAM or 0 */ 
-	void *pseudo_palette;		/* Fake palette of 16 colors */ 
+	char __iomem *screen_base;	/* Virtual address */						// 设置framebuffer的虚拟地址
+	unsigned long screen_size;	/* Amount of ioremapped VRAM or 0 */ 		// 显存大小:xres*yres*2(rgb565:16; rgb888:24)
+	void *pseudo_palette;		/* Fake palette of 16 colors */ 			// 假的调色板
 #define FBINFO_STATE_RUNNING	0
 #define FBINFO_STATE_SUSPENDED	1
 	u32 state;			/* Hardware state i.e suspend */

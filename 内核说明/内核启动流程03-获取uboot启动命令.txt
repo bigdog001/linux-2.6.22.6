@@ -1,0 +1,25 @@
+
+链接脚本:
+__arch_info_begin = .;
+   *(.arch.info.init)
+__arch_info_end = .;
+
+#define MACHINE_START(_type,_name)
+	__attribute__((__section__(".arch.info.init")))
+#define MACHINE_END
+
+MACHINE_START(S3C2440, "SMDK2440")
+	.boot_params	= S3C2410_SDRAM_PA + 0x100,
+	.init_irq	= s3c24xx_init_irq,
+	.map_io = smdk2440_map_io,
+	.init_machine	= smdk2440_machine_init,
+MACHINE_END
+
+start_kernel
+	setup_arch
+		mdesc = setup_machine(machine_arch_type)		// mdesc 为 MACHINE_START MACHINE_END
+			phys_to_virt(mdesc->boot_params)			// 通过uboot传递的参数，获取启动参数
+			parse_tags
+			parse_cmdline
+		paging_init
+			...

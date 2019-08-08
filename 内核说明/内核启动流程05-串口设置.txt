@@ -1,0 +1,79 @@
+链接脚本:
+__con_initcall_start = .;
+	*(.con_initcall.init)
+__con_initcall_end = .;
+
+#define console_initcall(fn) \
+	static initcall_t __initcall_##fn \
+	__attribute_used__ __attribute__((__section__(".con_initcall.init")))= fn
+
+console_initcall(s3c24xx_serial_initconsole);
+
+struct platform_device *s3c24xx_uart_devs[3] = {
+};
+
+struct cpu_table {
+	unsigned long	idcode;
+	unsigned long	idmask;
+	void		(*map_io)(struct map_desc *mach_desc, int size);
+	void		(*init_uarts)(struct s3c2410_uartcfg *cfg, int no);
+	void		(*init_clocks)(int xtal);
+	int		(*init)(void);
+	const char	*name;
+};
+
+struct cpu_table cpu_ids[] __initdata = {
+	,
+	{
+		.idcode		= 0x32440000,
+		.idmask		= 0xffffffff,
+		.map_io		= s3c244x_map_io,
+		.init_clocks	= s3c244x_init_clocks,
+		.init_uarts	= s3c244x_init_uarts,
+		.init		= s3c2440_init,
+		.name		= name_s3c2440
+	},
+}
+
+static struct s3c24xx_uart_info s3c2440_uart_inf = {
+	.name		= "Samsung S3C2440 UART",
+	.type		= PORT_S3C2440,
+	.fifosize	= 64,
+	.rx_fifomask	= S3C2440_UFSTAT_RXMASK,
+	.rx_fifoshift	= S3C2440_UFSTAT_RXSHIFT,
+	.rx_fifofull	= S3C2440_UFSTAT_RXFULL,
+	.tx_fifofull	= S3C2440_UFSTAT_TXFULL,
+	.tx_fifomask	= S3C2440_UFSTAT_TXMASK,
+	.tx_fifoshift	= S3C2440_UFSTAT_TXSHIFT,
+	.get_clksrc	= s3c2440_serial_getsource,
+	.set_clksrc	= s3c2440_serial_setsource,
+	.reset_port	= s3c2440_serial_resetport,
+};
+#define s3c2440_uart_inf_at &s3c2440_uart_inf
+
+smdk2440_map_io
+s3c24xx_init_uarts(smdk2440_uartcfgs, ARRAY_SIZE(smdk2440_uartcfgs));
+s3c24xx_init_uarts
+	(cpu->init_uarts)(cfg, no);				//.init_uarts	= s3c244x_init_uarts,
+	s3c244x_init_uarts
+		s3c24xx_init_uartdevs("s3c2440-uart", s3c2410_uart_resources, cfg, no)
+		s3c24xx_init_uartdevs
+			s3c24xx_uart_devs[uart] = platdev;				// 添加 uart相关配置
+
+start_kernel
+	setup_machine
+		paging_init
+			devicemaps_init
+			mdesc->map_io()									// map_io = smdk2440_map_io
+			smdk2440_map_io
+				s3c24xx_init_uarts
+				...
+	console_init
+		__con_initcall_start : __con_initcall_end
+		(*call)()
+		s3c24xx_serial_initconsole
+			struct platform_device *dev = s3c24xx_uart_devs[0]
+				info = s3c2440_uart_inf_at;
+				s3c24xx_serial_init_ports(info)				// s3c2440_uart_inf_at
+					s3c24xx_serial_resetport
+				register_console

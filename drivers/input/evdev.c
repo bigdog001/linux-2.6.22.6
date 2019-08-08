@@ -655,6 +655,7 @@ static int evdev_connect(struct input_handler *handler, struct input_dev *dev,
 
 	devt = MKDEV(INPUT_MAJOR, EVDEV_MINOR_BASE + minor),
 
+	printk("evdev.c::connect ==> create eventX = %s \n", evdev->name);
 	cdev = class_device_create(&input_class, &dev->cdev, devt,
 				   dev->cdev.dev, evdev->name);
 	if (IS_ERR(cdev)) {
@@ -725,6 +726,7 @@ static struct input_handler evdev_handler = {
 
 static int __init evdev_init(void)
 {
+	printk("evdev::evdev_init  input_register_handler \n");
 	return input_register_handler(&evdev_handler);
 }
 

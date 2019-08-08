@@ -1,0 +1,11 @@
+内核怎样启动第一个应用程序
+init_post()
+
+//标记输入
+open("/dev/console")			// /dev/console 对于终端串口，键盘，液晶等
+
+sys_dup(0);						//标准输出，都指向/dev/console
+sys_dup(0);						//错误输出，都指向/dev/console
+
+//xx = uboot传递给内核命令行中的 init=xxx ，如果命令行中不存在，则启动/sbin/init程序
+run_init_process(xx)			//启动程序

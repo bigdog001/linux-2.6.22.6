@@ -1,0 +1,69 @@
+查看 中断
+> cat /proc/interrupts
+
+struct irq_desc {
+	irq_flow_handler_t	handle_irq;
+	struct irq_chip		*chip;
+	struct msi_desc		*msi_desc;
+	void			*handler_data;
+	void			*chip_data;
+	struct irqaction	*action;	/* IRQ action list */
+	unsigned int		status;		/* IRQ status */
+
+	unsigned int		depth;		/* nested irq disables */
+	unsigned int		wake_depth;	/* nested wake enables */
+	unsigned int		irq_count;	/* For detecting broken IRQs */
+	unsigned int		irqs_unhandled;
+	spinlock_t		lock;
+#ifdef CONFIG_SMP
+	cpumask_t		affinity;
+	unsigned int		cpu;
+#endif
+#if defined(CONFIG_GENERIC_PENDING_IRQ) || defined(CONFIG_IRQBALANCE)
+	cpumask_t		pending_mask;
+#endif
+#ifdef CONFIG_PROC_FS
+	struct proc_dir_entry	*dir;
+#endif
+	const char		*name;
+} ____cacheline_internodealigned_in_smp;
+
+main.c
+	setup_arch(...)
+		init_arch_irq = mdesc->init_irq;					//.init_irq	= s3c24xx_init_irq,
+	init_IRQ(..)
+		init_arch_irq();
+		s3c24xx_init_irq(...)
+			set_irq_chip(irqno, &s3c_irq_eint0t4);			//s3c_irqext_chip,s3c_irq_uart0等
+				chip->enable = default_enable;
+				chip->disable = default_disable;
+				chip->startup = default_startup;
+				chip->shutdown = chip->disable;
+				chip->name = chip->typename;
+			set_irq_handler(irqno, handle_edge_irq);		//handle_level_irq
+				__set_irq_handler
+					mask_ack_irq
+			set_irq_flags(irqno, IRQF_VALID);
+
+
+struct irqaction {
+	irq_handler_t handler;
+	unsigned long flags;
+	cpumask_t mask;
+	const char *name;
+	void *dev_id;
+	struct irqaction *next;
+	int irq;
+	struct proc_dir_entry *dir;
+};
+
+
+请求中断
+request_irq(irq, handler, irqflags, *devname, *dev_id)	//中断号，中断处理函数，中断类型，中断名称，
+	struct irqaction *action
+	setup_irq(irq, action)							// 在irq_desc加入新的中断函数
+		desc->chip->set_type						// 设置中断引脚,触发方式等
+		desc->chip->startup/desc->chip->enable		// 使能引脚
+		
+卸载中断
+free_irq(irq, *dev_id);	

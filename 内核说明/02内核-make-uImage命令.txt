@@ -1,0 +1,32 @@
+make uImage 命令执行了如下操作:
+	一，.config --> autoconf.h:用于源文件使用
+		include/linux/autoconf.h
+			 #define CONFIG_DM9000 1
+		arch/arm/plat-s3c24xx/common-smdk.c
+			#if defined(CONFIG_DM9000) || defined(CONFIG_DM9000_MODULE)
+			#include <linux/dm9000.h>
+			#endif
+		会引入 linux/dm9000.h 头文件，并进行编译
+
+	二，.config --> auto.conf:用于顶层Makefile，可供子目录Makefile使用
+		include/config/auto.conf：
+			CONFIG_DM9000=y
+		drivers/nets/Makefile:
+			obj-$(CONFIG_DM9000) += dm9dev9000c.o
+			
+		最终变成:
+			obj-y += dm9dev9000c.o		表示会编译进内核
+		另一种情况是:
+			obj-m += xxx.o				表示不会编译进内核，但是会生成xxx.ko文件
+			
+
+uImage目标：
+	位于arm/arm/Makefile下，该Makefile会被包含进顶层Makefile中。
+	.. uImage : vmlinux   				//uImage依赖vmlinux
+		all: vmlinux
+	
+auto.conf配置文件：
+	被顶层Makefile包含进来。
+
+
+> make uImage V=1						//V=1 表示会更加详细的把编译内容列出来	

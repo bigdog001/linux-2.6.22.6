@@ -84,7 +84,6 @@
 	printk(KERN_DEBUG "yaffs: " fmt "\n", ##__VA_ARGS__)
 
 #define yaffs_trace(msk, fmt, ...) do { \
-	printk("yaffs_trace::yaffs_trace_mask = 0x%08X\n",yaffs_trace_mask);	\
 	if ((yaffs_trace_mask | YAFFS_TRACE_ALWAYS) & (msk)) \
 		printk(KERN_DEBUG "yaffs: " fmt "\n", ##__VA_ARGS__); \
 } while (0)

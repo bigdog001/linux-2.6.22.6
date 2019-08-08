@@ -85,11 +85,11 @@ struct input_absinfo {
  * Event types
  */
 
-#define EV_SYN			0x00
-#define EV_KEY			0x01
-#define EV_REL			0x02
-#define EV_ABS			0x03
-#define EV_MSC			0x04
+#define EV_SYN			0x00						// 同步类事件
+#define EV_KEY			0x01						// 按键类事件
+#define EV_REL			0x02						// 相对类事件(鼠标)
+#define EV_ABS			0x03						// 绝对类事件(触摸屏)
+#define EV_MSC			0x04						// 
 #define EV_SW			0x05
 #define EV_LED			0x11
 #define EV_SND			0x12
@@ -933,10 +933,10 @@ struct input_dev {
 	const char *uniq;
 	struct input_id id;
 
-	unsigned long evbit[NBITS(EV_MAX)];
-	unsigned long keybit[NBITS(KEY_MAX)];
-	unsigned long relbit[NBITS(REL_MAX)];
-	unsigned long absbit[NBITS(ABS_MAX)];
+	unsigned long evbit[NBITS(EV_MAX)];					// 表示能产生哪类事件
+	unsigned long keybit[NBITS(KEY_MAX)];				// 表示能产生哪些按键
+	unsigned long relbit[NBITS(REL_MAX)];				// 表示能产生哪些相对位移事件，x,y,滚轮
+	unsigned long absbit[NBITS(ABS_MAX)];				// 表示能产生哪些绝对位移事件，x,y
 	unsigned long mscbit[NBITS(MSC_MAX)];
 	unsigned long ledbit[NBITS(LED_MAX)];
 	unsigned long sndbit[NBITS(SND_MAX)];
